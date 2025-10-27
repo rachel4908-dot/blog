@@ -1,0 +1,77 @@
+
+import streamlit as st
+import requests
+import uuid
+
+def get_mac_address():
+    id = uuid.getnode()
+    mac = ':'.join(("%012X" % id)[i:i+2] for i in range(0, 12, 2))
+    return mac
+
+def auth(username, password):
+    mac = get_mac_address()
+    res = requests.post('https://tellurium.ejae8319.workers.dev/api/users/auth', json={
+        "project": "네이버자동포스팅-신공간",
+        "username": username,
+        "password": password,
+        "code": mac,
+    })
+    return res.ok
+
+st.set_page_config(page_title="Naver Auto Posting", layout="wide")
+st.title("네이버 자동 포스팅 프로그램")
+
+# 인증 폼 (main.py의 AuthDialog 대체)
+if "auth" not in st.session_state:
+    st.session_state["auth"] = False
+
+with st.sidebar:
+    st.header("로그인 및 인증")
+    username = st.text_input("아이디")
+    password = st.text_input("비밀번호", type="password")
+    if st.button("인증하기"):
+        if auth(username, password):
+            st.success("인증 성공!")
+            st.session_state["auth"] = True
+        else:
+            st.error("인증 실패. 아이디/비밀번호를 확인하세요.")
+            st.session_state["auth"] = False
+
+# 인증 성공 시 메인 화면 (MainFrame 기능 웹 변환)
+if st.session_state.get("auth"):
+    col1, col2, col3 = st.columns([1,2,1])
+    with col1:
+        st.subheader("계정/키워드/블로그/카페 리스트")
+        st.write("계정 리스트")
+        st.table([['user1', 'pass1'], ['user2', 'pass2']])
+        st.write("키워드 리스트")
+        st.table([['키워드1'], ['키워드2']])
+        st.write("블로그 리스트")
+        st.table([['블로그1'], ['블로그2']])
+        st.write("카페 리스트")
+        st.table([['카페1'], ['카페2']])
+        st.write("상태: 대기중")
+        st.write("IP 정보: 192.168.0.1 (예시)")
+        st.write("API 번호: 123456 (예시)")
+        st.write("핸드폰 번호: 010-1234-5678 (예시)")
+    with col2:
+        st.subheader("포스팅 입력 및 실행")
+        with st.form("posting_form"):
+            title_input = st.text_input("포스팅 제목 입력")
+            content_input = st.text_area("포스팅 내용 입력")
+            address = st.text_input("주소(치환용)")
+            company = st.text_input("업체명(치환용)")
+            waiting_min = st.number_input("최소 대기 시간(초)", min_value=0, value=5)
+            waiting_max = st.number_input("최대 대기 시간(초)", min_value=0, value=10)
+            submitted = st.form_submit_button("자동 포스팅 실행")
+        if submitted:
+            st.info("자동 포스팅 기능은 Selenium 등 외부 모듈과 연동 필요. 실제 동작은 별도 구현 필요.")
+            st.success("작업이 실행되었습니다. (예시)")
+    with col3:
+        st.subheader("로그 및 결과")
+        st.write(f"[{st.session_state.get('log_start', '2025-10-27')}] 프로그램 시작")
+        st.write(f"[{st.session_state.get('log_auth', '2025-10-27')}] 인증 성공")
+        st.write(f"[{st.session_state.get('log_wait', '2025-10-27')}] 작업 대기중...")
+        st.write(f"[{st.session_state.get('log_post', '2025-10-27')}] 로그 예시: 자동 포스팅 실행")
+else:
+    st.warning("인증 후 사용 가능합니다.")

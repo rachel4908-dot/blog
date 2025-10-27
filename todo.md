@@ -9,12 +9,12 @@
      - 대기시간 최소, 최대값: 범위 내 random
 2. UI
    1. **공용**
-      - ID, PW 업로드 (버튼 + 리스트)
-      - 키워드 업로드 (버튼 + 리스트)
-      - 전화번호, API KEY 텍스트박스
+      - <span style='color:red'>ID, PW 업로드 (버튼 + 리스트)</span>
+      - <span style='color:red'>키워드 업로드 (버튼 + 리스트)</span>
+      - <span style='color:red'>전화번호</span>, API KEY 텍스트박스
       - 유동IP on/off버튼 (토글 or 버튼)  
-   2. **나눠야 할 것(블로그 / 카페)**
-      - 웹주소 업로드 (버튼 + 리스트)
+   2. <span style='color:red'>**나눠야 할 것(블로그 / 카페)**</span>
+      - <span style='color:red'>웹주소 업로드 (버튼 + 리스트)</span>
 
 ## 2주차: 사진 및 영상 제작 + 글밥 미리 저장
 1. Static 사진
