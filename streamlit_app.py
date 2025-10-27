@@ -26,6 +26,7 @@ st.title("네이버 자동 포스팅 프로그램")
 
 # Gemini API 키 입력 및 인증
 
+
 st.subheader("Gemini API 키 입력")
 gemini_api_key = st.text_input("Gemini API 키를 입력하세요", type="password", key="gemini_api_key")
 if st.button("Gemini 키 인증하기"):
@@ -41,21 +42,36 @@ if st.button("Gemini 키 인증하기"):
         st.error(f"유효하지 않은 키입니다: {e}")
         st.session_state["gemini_api_key_valid"] = False
 
+
+# 네이버 아이디/패스워드 입력란 및 로그인 버튼
+st.subheader("네이버 로그인 정보 입력")
+naver_id = st.text_input("네이버 아이디를 입력하세요", key="naver_id")
+naver_pw = st.text_input("네이버 패스워드를 입력하세요", type="password", key="naver_pw")
+if st.button("네이버 로그인"):
+    try:
+        from web import webdriver, login
+        # 기존 세션이 있으면 안전하게 종료
+        if getattr(webdriver, 'driver', None) is not None:
+            try:
+                webdriver.driver.quit()
+            except Exception:
+                pass
+            webdriver.driver = None
+        webdriver.init_chrome()
+        login.enter_naver_login()
+        login.input_id_pw(naver_id, naver_pw)
+        login.click_login_button()
+        if login.check_login_done():
+            st.success("네이버 로그인 성공!")
+        else:
+            st.error("네이버 로그인 실패 또는 오류 발생.")
+    except Exception as e:
+        st.error(f"네이버 로그인 중 오류: {e}")
+
 # 인증 폼 (main.py의 AuthDialog 대체)
 if "auth" not in st.session_state:
     st.session_state["auth"] = False
 
-with st.sidebar:
-    st.header("로그인 및 인증")
-    username = st.text_input("아이디")
-    password = st.text_input("비밀번호", type="password")
-    if st.button("인증하기"):
-        if auth(username, password):
-            st.success("인증 성공!")
-            st.session_state["auth"] = True
-        else:
-            st.error("인증 실패. 아이디/비밀번호를 확인하세요.")
-            st.session_state["auth"] = False
 
 
 # 인증 여부와 관계없이 메인 화면 항상 표시
