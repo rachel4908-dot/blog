@@ -1,7 +1,9 @@
 
+
 import streamlit as st
 import requests
 import uuid
+from google import genai
 
 def get_mac_address():
     id = uuid.getnode()
@@ -19,7 +21,25 @@ def auth(username, password):
     return res.ok
 
 st.set_page_config(page_title="Naver Auto Posting", layout="wide")
+
 st.title("네이버 자동 포스팅 프로그램")
+
+# Gemini API 키 입력 및 인증
+
+st.subheader("Gemini API 키 입력")
+gemini_api_key = st.text_input("Gemini API 키를 입력하세요", type="password", key="gemini_api_key")
+if st.button("Gemini 키 인증하기"):
+    try:
+        client = genai.Client(api_key=gemini_api_key)
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents="Hello",
+        )
+        st.success("Gemini API 키 인증 성공!")
+        st.session_state["gemini_api_key_valid"] = True
+    except Exception as e:
+        st.error(f"유효하지 않은 키입니다: {e}")
+        st.session_state["gemini_api_key_valid"] = False
 
 # 인증 폼 (main.py의 AuthDialog 대체)
 if "auth" not in st.session_state:
@@ -37,41 +57,39 @@ with st.sidebar:
             st.error("인증 실패. 아이디/비밀번호를 확인하세요.")
             st.session_state["auth"] = False
 
-# 인증 성공 시 메인 화면 (MainFrame 기능 웹 변환)
-if st.session_state.get("auth"):
-    col1, col2, col3 = st.columns([1,2,1])
-    with col1:
-        st.subheader("계정/키워드/블로그/카페 리스트")
-        st.write("계정 리스트")
-        st.table([['user1', 'pass1'], ['user2', 'pass2']])
-        st.write("키워드 리스트")
-        st.table([['키워드1'], ['키워드2']])
-        st.write("블로그 리스트")
-        st.table([['블로그1'], ['블로그2']])
-        st.write("카페 리스트")
-        st.table([['카페1'], ['카페2']])
-        st.write("상태: 대기중")
-        st.write("IP 정보: 192.168.0.1 (예시)")
-        st.write("API 번호: 123456 (예시)")
-        st.write("핸드폰 번호: 010-1234-5678 (예시)")
-    with col2:
-        st.subheader("포스팅 입력 및 실행")
-        with st.form("posting_form"):
-            title_input = st.text_input("포스팅 제목 입력")
-            content_input = st.text_area("포스팅 내용 입력")
-            address = st.text_input("주소(치환용)")
-            company = st.text_input("업체명(치환용)")
-            waiting_min = st.number_input("최소 대기 시간(초)", min_value=0, value=5)
-            waiting_max = st.number_input("최대 대기 시간(초)", min_value=0, value=10)
-            submitted = st.form_submit_button("자동 포스팅 실행")
-        if submitted:
-            st.info("자동 포스팅 기능은 Selenium 등 외부 모듈과 연동 필요. 실제 동작은 별도 구현 필요.")
-            st.success("작업이 실행되었습니다. (예시)")
-    with col3:
-        st.subheader("로그 및 결과")
-        st.write(f"[{st.session_state.get('log_start', '2025-10-27')}] 프로그램 시작")
-        st.write(f"[{st.session_state.get('log_auth', '2025-10-27')}] 인증 성공")
-        st.write(f"[{st.session_state.get('log_wait', '2025-10-27')}] 작업 대기중...")
-        st.write(f"[{st.session_state.get('log_post', '2025-10-27')}] 로그 예시: 자동 포스팅 실행")
-else:
-    st.warning("인증 후 사용 가능합니다.")
+
+# 인증 여부와 관계없이 메인 화면 항상 표시
+col1, col2, col3 = st.columns([1,2,1])
+with col1:
+    st.subheader("계정/키워드/블로그/카페 리스트")
+    st.write("계정 리스트")
+    st.table([['user1', 'pass1'], ['user2', 'pass2']])
+    st.write("키워드 리스트")
+    st.table([['키워드1'], ['키워드2']])
+    st.write("블로그 리스트")
+    st.table([['블로그1'], ['블로그2']])
+    st.write("카페 리스트")
+    st.table([['카페1'], ['카페2']])
+    st.write("상태: 대기중")
+    st.write("IP 정보: 192.168.0.1 (예시)")
+    st.write("API 번호: 123456 (예시)")
+    st.write("핸드폰 번호: 010-1234-5678 (예시)")
+with col2:
+    st.subheader("포스팅 입력 및 실행")
+    with st.form("posting_form"):
+        title_input = st.text_input("포스팅 제목 입력")
+        content_input = st.text_area("포스팅 내용 입력")
+        address = st.text_input("주소(치환용)")
+        company = st.text_input("업체명(치환용)")
+        waiting_min = st.number_input("최소 대기 시간(초)", min_value=0, value=5)
+        waiting_max = st.number_input("최대 대기 시간(초)", min_value=0, value=10)
+        submitted = st.form_submit_button("자동 포스팅 실행")
+    if submitted:
+        st.info("자동 포스팅 기능은 Selenium 등 외부 모듈과 연동 필요. 실제 동작은 별도 구현 필요.")
+        st.success("작업이 실행되었습니다. (예시)")
+with col3:
+    st.subheader("로그 및 결과")
+    st.write(f"[{st.session_state.get('log_start', '2025-10-27')}] 프로그램 시작")
+    st.write(f"[{st.session_state.get('log_auth', '2025-10-27')}] 인증 성공")
+    st.write(f"[{st.session_state.get('log_wait', '2025-10-27')}] 작업 대기중...")
+    st.write(f"[{st.session_state.get('log_post', '2025-10-27')}] 로그 예시: 자동 포스팅 실행")
